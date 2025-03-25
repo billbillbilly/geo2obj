@@ -1,10 +1,22 @@
 #----------------------------- library -----------------------------
-require('raster')
-require('terra')
-require('lidR')
-require('quadmesh')
-require('Morpho')
-require('dsmSearch')
+if (!require('raster')) {
+  install.packages("raster")
+}
+if (!require('terra')) {
+  install.packages("terra")
+}
+if (!require('lidR')) {
+  install.packages("lidR")
+}
+if (!require('quadmesh')) {
+  install.packages("quadmesh")
+}
+if (!require('Morpho')) {
+  install.packages("Morpho")
+}
+if (!require('dsmSearch')) {
+  install.packages("dsmSearch")
+}
 
 #----------------------------- functions -----------------------------
 las2obj <- function(bbox, epsg, material, model_dir, resolution=10, geotype='terrain', outtype='mesh') {
