@@ -1,3 +1,12 @@
+#----------------------------- library -----------------------------
+require('raster')
+require('terra')
+require('lidR')
+require('quadmesh')
+require('Morpho')
+require('dsmSearch')
+
+#----------------------------- functions -----------------------------
 las2obj <- function(bbox, epsg, material, model_dir, resolution=10, geotype='terrain', outtype='mesh') {
   # bbox (vector): the bounding box for searching, downloading, and cropping the LiDAR data
   # epsg (numeric): EPSG code
@@ -134,8 +143,11 @@ writeObj <- function(mesh, dir, outtype) {
 }
 
 #----------------------------- run -----------------------------
-model_dir <- '/model' # modify for your directory
-bbox <-  c(-83.731838,42.288739,-83.727601,42.291691) # modify for your area of interest
-epsg <- 2253 # modify for your focused area
+
+# use bbox finder to get a bbox: http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000
+
+model_dir <- '/model'                                  # modify for your directory
+bbox <-  c(-83.731838,42.288739,-83.727601,42.291691)  # modify for your area of interest
+epsg <- 2253                                           # modify for your focused area
 
 las2obj(bbox, epsg, model_dir, resolution=10, geotype='terrain', outtype='mesh')
