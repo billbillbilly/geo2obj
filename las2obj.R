@@ -1,4 +1,28 @@
+las2obj <- function(bbox, epsg, material, model_dir, resolution=10, geotype='terrain', outtype='mesh') {
+  # bbox (vector): the bounding box for searching, downloading, and cropping the LiDAR data
+  # epsg (numeric): EPSG code
+  # material (string, optional): the directory of a 3-layer png image
+  # model_dir (string): the directory for saving the output model
+  # geotype (string, optional): the type of elevation model to be converted into OBJ file. Defaulted to 'terrain'. ['terrain', 'surface']
+  # outtype (string, optional): the type of output object. Defaulted to 'mesh'. ['mesh', 'point']
+
+  las <- dsmSearch::get_lidar(bbox, epsg)
+  if (geotype == 'terrain') {
+    ras <- lidR::rasterize_terrain(las, resolution, lidR::tin())
+  } else if (geotype == 'surface') {
+    ras <- lidR::rasterize_canopy(las, resolution, lidR::tin())
+  }
+  
+  mesh <- raster2mesh(ras, material, model_dir)
+  writeObj(mesh, dir = model_dir)
+  write_MTL(model_dir)
+}
+
 raster2mesh <- function(ras, material, model_dir) {
+  # ras (rast): dtm/dsm raster
+  # material (string, optional): the directory of a 3-layer png image 
+  # model_dir (string): the directory for saving the output model
+    
   m <- terra::as.matrix(ras, wide=TRUE)
   m[is.na(m)] <- mean(m, na.rm = TRUE)
   if (missing(material)) {
@@ -59,7 +83,7 @@ write_MTL <- function(model_path){
   writeLines(mtl_content, paste0(model_path, "/material.mtl"))
 }
 
-writeObj <- function(mesh, dir, outtype=) {
+writeObj <- function(mesh, dir, outtype) {
   vb <- t(mesh[["vb"]])
   vt <- t(mesh[["texcoords"]])
   vn <- t(mesh[["normals"]])
@@ -102,20 +126,16 @@ writeObj <- function(mesh, dir, outtype=) {
                      "usemtl material",
                      f_lines)
   obj_textureOFF <- c(vb_line, vn_line)
-  writeLines(obj_textureOn, obj_path1)
-  writeLines(obj_textureOFF, obj_path2)
+  if (outtype == 'mesh') {
+    writeLines(obj_textureOn, obj_path1)
+  } else if (outtype == 'point') {
+    writeLines(obj_textureOFF, obj_path2)
+  }
 }
 
+#----------------------------- run -----------------------------
+model_dir <- '/model' # modify for your directory
+bbox <-  c(-83.731838,42.288739,-83.727601,42.291691) # modify for your area of interest
+epsg <- 2253 # modify for your focused area
 
-model_dir <- '/model2'
-las <- dsmSearch::get_lidar(bbox = c(-83.731838,42.288739,-83.727601,42.291691), epsg = 2253)
-ras <- lidR::rasterize_terrain(las, 10, lidR::tin())
-
-mesh <- raster2mesh(ras=ras, model_dir=model_dir)
-writeObj(mesh, dir = model_dir)
-write_MTL(model_dir)
-
-
-
-
-
+las2obj(bbox, epsg, model_dir, resolution=10, geotype='terrain', outtype='mesh')
