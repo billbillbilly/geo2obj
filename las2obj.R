@@ -27,7 +27,7 @@ las2obj <- function(bbox, epsg, material, model_dir, resolution=10, geotype='ter
   # geotype (string, optional): the type of elevation model to be converted into OBJ file. Defaulted to 'terrain'. ['terrain', 'surface']
   # outtype (string, optional): the type of output object. Defaulted to 'mesh'. ['mesh', 'point']
 
-  las <- dsmSearch::get_lidar(bbox, epsg)
+  las <- dsmSearch::get_lidar(bbox=box, epsg=epsg)
   if (geotype == 'terrain') {
     ras <- lidR::rasterize_terrain(las, resolution, lidR::tin())
   } else if (geotype == 'surface') {
