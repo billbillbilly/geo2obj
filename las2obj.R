@@ -162,4 +162,4 @@ model_dir <- '/model'                                  # modify for your directo
 bbox <-  c(-83.731838,42.288739,-83.727601,42.291691)  # modify for your area of interest
 epsg <- 2253                                           # modify for your focused area
 
-las2obj(bbox, epsg, model_dir, resolution=10, geotype='terrain', outtype='mesh')
+las2obj(bbox=bbox, epsg=epsg, model_dir=model_dir, resolution=10, geotype='terrain', outtype='mesh')
