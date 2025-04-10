@@ -165,11 +165,10 @@ writeObj <- function(mesh, dir, outtype) {
 
 #----------------------------- run -----------------------------
 
-# use bbox finder to get a bbox: http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000
-
 model_dir <- '/model'                                  # modify for your directory
 
 #### get obj based on bbox
+# use bbox finder to get a bbox: http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000
 bbox <-  c(-83.731838,42.288739,-83.727601,42.291691)  # modify for your area of interest
 epsg <- 2253                                           # modify for your focused area
 las2obj(bbox=bbox, epsg=epsg, model_dir=model_dir, resolution=10, geotype='terrain', outtype='mesh')
@@ -178,6 +177,6 @@ las2obj(bbox=bbox, epsg=epsg, model_dir=model_dir, resolution=10, geotype='terra
 las <- lidR::readLAS('path/to/.laz')                   # modify for your directory
 las2obj(las=las, model_dir=model_dir, resolution=10, geotype='terrain', outtype='mesh')
 
-#### get obj based on local raster dsm/dsm
+#### get obj based on local raster dem/dsm
 ras <- terra::rast('path/to/.tif')                     # modify for your directory
 las2obj(ras=ras, model_dir=model_dir, geotype='terrain', outtype='mesh')
