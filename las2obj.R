@@ -19,7 +19,7 @@ if (!require('dsmSearch')) {
 }
 
 #----------------------------- functions -----------------------------
-las2obj <- function(bbox, epsg, material, model_dir, resolution=10, geotype='terrain', outtype='mesh') {
+las2obj <- function(bbox, epsg, las, ras, material, model_dir, resolution=10, geotype='terrain', outtype='mesh') {
   # bbox (vector): the bounding box for searching, downloading, and cropping the LiDAR data
   # epsg (numeric): EPSG code
   # material (string, optional): the directory of a 3-layer png image
@@ -27,15 +27,24 @@ las2obj <- function(bbox, epsg, material, model_dir, resolution=10, geotype='ter
   # geotype (string, optional): the type of elevation model to be converted into OBJ file. Defaulted to 'terrain'. ['terrain', 'surface']
   # outtype (string, optional): the type of output object. Defaulted to 'mesh'. ['mesh', 'point']
 
-  las <- dsmSearch::get_lidar(bbox=box, epsg=epsg)
-  if (geotype == 'terrain') {
-    ras <- lidR::rasterize_terrain(las, resolution, lidR::tin())
-  } else if (geotype == 'surface') {
-    ras <- lidR::rasterize_canopy(las, resolution, lidR::tin())
+  if (!missing(bbox) | !missing(epsg)) {
+    las <- dsmSearch::get_lidar(bbox=box, epsg=epsg)
+  }
+
+  if (missing(ras) & !missing(las)) {
+    if (geotype == 'terrain') {
+      ras <- lidR::rasterize_terrain(las, resolution, lidR::tin())
+    } else if (geotype == 'surface') {
+      ras <- lidR::rasterize_canopy(las, resolution, lidR::tin())
+    }
+  }
+
+  if (missing(material)) {
+    material <- NaN
   }
   
   mesh <- raster2mesh(ras, material, model_dir)
-  writeObj(mesh, dir = model_dir)
+  writeObj(mesh, dir = model_dir, outtype)
   write_MTL(model_dir)
 }
 
@@ -46,7 +55,7 @@ raster2mesh <- function(ras, material, model_dir) {
     
   m <- terra::as.matrix(ras, wide=TRUE)
   m[is.na(m)] <- mean(m, na.rm = TRUE)
-  if (missing(material)) {
+  if (is.na(material) | missing(material)) {
     r_max <- max(m, na.rm = TRUE)
     r_min <- min(m, na.rm = TRUE)
     norm_m <- (m - r_min) / (r_max - r_min)
@@ -159,7 +168,16 @@ writeObj <- function(mesh, dir, outtype) {
 # use bbox finder to get a bbox: http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000
 
 model_dir <- '/model'                                  # modify for your directory
+
+#### get obj based on bbox
 bbox <-  c(-83.731838,42.288739,-83.727601,42.291691)  # modify for your area of interest
 epsg <- 2253                                           # modify for your focused area
-
 las2obj(bbox=bbox, epsg=epsg, model_dir=model_dir, resolution=10, geotype='terrain', outtype='mesh')
+
+#### get obj based on local point cloud data
+las <- lidR::readLAS('path/to/.laz')                   # modify for your directory
+las2obj(las=las, model_dir=model_dir, resolution=10, geotype='terrain', outtype='mesh')
+
+#### get obj based on local raster dsm/dsm
+ras <- terra::rast('path/to/.tif')                     # modify for your directory
+las2obj(ras=ras, model_dir=model_dir, geotype='terrain', outtype='mesh')
